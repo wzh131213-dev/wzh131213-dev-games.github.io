@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>公路之王 - 完整平滑转场版</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- 过渡遮罩 -->
+    <div id="transition-overlay"></div>
+
+    <!-- 3D WebGL 画布 -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- 2D 侧面街机画布 -->
+    <canvas id="arcade-canvas"></canvas>
+
+    <!-- 车库选择界面 -->
+    <div id="garage-screen">
+        <h1>公路之王 - 完整平滑转场版</h1>
+        <p>400公里终点决战，关卡二10公里处开启极速飞行</p>
+        
+        <div class="section-title">1. 选择赛车配置</div>
+        <div class="car-select-container">
+            <div class="car-card selected" onclick="selectCar(0, 0xef4444, 300, this)">
+                <div class="car-preview-box" style="background: rgba(239,68,68,0.2); border: 2px solid #ef4444;">🏎️</div>
+                <h3>红色战车</h3>
+                <span>极速: 300 km/min</span>
+            </div>
+            <div class="car-card" onclick="selectCar(1, 0x3b82f6, 700, this)">
+                <div class="car-preview-box" style="background: rgba(59,130,246,0.2); border: 2px solid #3b82f6;">🏎️</div>
+                <h3>蓝色超跑</h3>
+                <span>极速: 700 km/min</span>
+            </div>
+            <div class="car-card" onclick="selectCar(2, 0xfbbf24, 1000, this)">
+                <div class="car-preview-box" style="background: rgba(251,191,36,0.2); border: 2px solid #fbbf24;">🏎️</div>
+                <h3>黄色闪电</h3>
+                <span>极速: 1000 km/min</span>
+            </div>
+        </div>
+
+        <div class="section-title">2. 选择游戏难度</div>
+        <div class="difficulty-select-container">
+            <div class="difficulty-card selected" onclick="selectDifficulty(10000, this)">
+                <h3>简单模式</h3>
+                <span>耐久值: 10000</span>
+            </div>
+            <div class="difficulty-card" onclick="selectDifficulty(100, this)">
+                <h3>困难模式</h3>
+                <span>耐久值: 100</span>
+            </div>
+        </div>
+
+        <div class="section-title">3. 选择关卡地图</div>
+        <div class="level-select-container">
+            <div class="level-card selected" onclick="selectLevel(1, this)">
+                <h3>关卡一</h3>
+                <span>自由巡航与斜板车飞跃 (400km终点)</span>
+            </div>
+            <div class="level-card" onclick="selectLevel(2, this)">
+                <h3>关卡二</h3>
+                <span>极限拥挤空间 (10km开启极速飞行)</span>
+            </div>
+        </div>
+
+        <button class="start-game-btn" onclick="startGame()">开始驾驶</button>
+    </div>
+
+    <!-- 顶部按钮 -->
+    <div class="top-btn-group" id="top-btn-group">
+        <button class="top-btn" onclick="openGarage()">更换车库</button>
+    </div>
+
+    <!-- 飞行模式开启按钮 -->
+    <button id="flight-unlock-btn" onclick="activateFlightMode()">✈️ 开启 10000 极速分层飞行模式</button>
+
+    <!-- 漫画对白框 -->
+    <div id="comic-story-box">
+        分镜 I：<span id="story-text">高速公路上车流如织，全速向400公里终点冲刺...</span>
+    </div>
+
+    <!-- 仪表盘 -->
+    <div id="hud">
+        <div>速度: <span class="hud-val" id="speed-val">0</span> km/min</div>
+        <div>里程: <span class="hud-val" id="dist-val">0.0</span> / 400.0 km</div>
+        <div>耐久值: <span class="hud-val" id="hp-val">10000</span> / <span id="max-hp-val">10000</span></div>
+    </div>
+    <div id="orientation-tip">视角: 横屏</div>
+
+    <!-- 游戏结束面板 -->
+    <div class="full-screen-panel" id="game-over-screen">
+        <h1 style="color: #ef4444;">💥 挑战结束 💥</h1>
+        <p>车辆耐久耗尽</p>
+        <button class="restart-btn" onclick="resetGame()">重新挑战</button>
+    </div>
+
+    <div class="full-screen-panel" id="victory-screen">
+        <h1 style="color: #fbbf24;">🏆 挑战成功 🏆</h1>
+        <p>恭喜成功抵达 400 公里终点！</p>
+        <button class="restart-btn" onclick="resetGame()">再次挑战</button>
+    </div>
+
+    <!-- 虚拟按键 -->
+    <div class="controls">
+        <div class="btn-group-left">
+            <div class="btn" id="btn-left">◀</div>
+            <div class="btn" id="btn-right">▶</div>
+        </div>
+        
+        <div class="btn-group-vertical" id="flight-controls-group">
+            <div class="btn btn-fly" id="btn-fly-up">🚀 上飞</div>
+            <div class="btn btn-fly" id="btn-fly-down">⚓ 下降</div>
+        </div>
+
+        <div class="btn-group-vertical">
+            <div class="btn pedal-gas" id="btn-gas">▲ 油门</div>
+            <div class="btn pedal-brake" id="btn-brake">▼ 刹车</div>
+        </div>
+    </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
