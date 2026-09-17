@@ -35,7 +35,7 @@ const keys = { left: false, right: false, gas: false, brake: false, flyUp: false
 // ==================== 作弊系统 ====================
 function triggerCheat() {
     const inputPass = prompt("请输入作弊密码：");
-    if (inputPass === "@%#-¥") {
+    if (inputPass === "@%#-¥～") {
         baseMaxSpeedKmMin = 100000;
         currentMaxSpeed = 150.0; // 提升加速上限
         speed = 150.0; // 瞬间提速
@@ -173,27 +173,46 @@ function init2DArcade() {
 function createDetailedCar(colorHex) {
     const carGroup = new THREE.Group();
 
-    const bodyGeo = new THREE.BoxGeometry(1.6, 0.5, 3.2);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.4 });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.y = 0.45;
-    carGroup.add(body);
+    // 1. 卡车车头 (Cab)
+    const cabGeo = new THREE.BoxGeometry(1.8, 1.4, 1.5);
+    const cabMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.5 });
+    const cab = new THREE.Mesh(cabGeo, cabMat);
+    cab.position.set(0, 1.0, 2.2); // 车头靠前
+    carGroup.add(cab);
 
-    const cabinGeo = new THREE.BoxGeometry(1.3, 0.45, 1.6);
-    const cabinMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.1 });
-    const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-    cabin.position.set(0, 0.85, -0.2);
-    carGroup.add(cabin);
+    // 车头挡风玻璃
+    const windshieldGeo = new THREE.BoxGeometry(1.6, 0.6, 0.1);
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.1 });
+    const windshield = new THREE.Mesh(windshieldGeo, glassMat);
+    windshield.position.set(0, 1.2, 2.96);
+    carGroup.add(windshield);
 
-    const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.25, 16);
+    // 2. 后方长货仓 (Long Cargo Container)
+    const cargoGeo = new THREE.BoxGeometry(2.0, 1.8, 5.2);
+    const cargoMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4, metalness: 0.2 }); // 银白色金属箱体
+    const cargo = new THREE.Mesh(cargoGeo, cargoMat);
+    cargo.position.set(0, 1.3, -1.2); // 货仓向后延伸
+    carGroup.add(cargo);
+
+    // 货仓与车头连接轴 (Hitch Connector)
+    const hitchGeo = new THREE.BoxGeometry(0.6, 0.2, 0.8);
+    const hitchMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+    const hitch = new THREE.Mesh(hitchGeo, hitchMat);
+    hitch.position.set(0, 0.4, 1.2);
+    carGroup.add(hitch);
+
+    // 3. 多轮组设计 (重卡车轮)
+    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
     wheelGeo.rotateZ(Math.PI / 2);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-    
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+
+    // 重卡 6 组车轮位置 (前轮 + 后双轴共 6 轮)
     const wheelPositions = [
-        [-0.85, 0.3, 1.0], [0.85, 0.3, 1.0],
-        [-0.85, 0.3, -1.0], [0.85, 0.3, -1.0]
+        [-0.95, 0.4, 2.2], [0.95, 0.4, 2.2],   // 车头前轮
+        [-1.05, 0.4, -0.8], [1.05, 0.4, -0.8], // 货仓前组后轮
+        [-1.05, 0.4, -2.4], [1.05, 0.4, -2.4]  // 货仓后组后轮
     ];
-    
+
     carGroup.userData.wheels = [];
     wheelPositions.forEach(pos => {
         const wheel = new THREE.Mesh(wheelGeo, wheelMat);
