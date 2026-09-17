@@ -35,7 +35,7 @@ const keys = { left: false, right: false, gas: false, brake: false, flyUp: false
 // ==================== 作弊系统 ====================
 function triggerCheat() {
     const inputPass = prompt("请输入作弊密码：");
-    if (inputPass === "@%#-¥～") {
+    if (inputPass === "wzh") {
         baseMaxSpeedKmMin = 100000;
         currentMaxSpeed = 150.0; // 提升加速上限
         speed = 150.0; // 瞬间提速
