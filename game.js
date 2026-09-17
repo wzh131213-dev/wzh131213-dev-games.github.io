@@ -111,6 +111,7 @@ function startGame() {
         init3D();
         init2DArcade();
     } else {
+        // 更新货舱主颜色
         playerCar.children[0].material.color.setHex(selectedColor);
         resetWheelsToNormal();
         rebuildNpcsForLevel();
@@ -170,47 +171,71 @@ function init2DArcade() {
     arcadePlayer.y = arcadeCanvas.height * 0.3;
 }
 
+// 重卡大运模型（带货舱颜色绑定与车尾尾灯细节）
 function createDetailedCar(colorHex) {
     const carGroup = new THREE.Group();
 
-    // 1. 卡车车头 (Cab)
-    const cabGeo = new THREE.BoxGeometry(1.8, 1.4, 1.5);
-    const cabMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.5 });
+    // 1. 后方长货仓（放在 children[0]，便于车库选色时直接改变货仓颜色）
+    const cargoGeo = new THREE.BoxGeometry(2.1, 2.0, 5.5);
+    const cargoMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.3 });
+    const cargo = new THREE.Mesh(cargoGeo, cargoMat);
+    cargo.position.set(0, 1.4, -1.2); 
+    carGroup.add(cargo); // index 0
+
+    // 货仓后门框黑色边框（增加车尾层次感）
+    const doorFrameGeo = new THREE.BoxGeometry(1.9, 1.8, 0.05);
+    const doorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
+    const doorFrame = new THREE.Mesh(doorFrameGeo, doorMat);
+    doorFrame.position.set(0, 1.4, -3.96);
+    carGroup.add(doorFrame);
+
+    // 车尾发光红尾灯 (左右双灯)
+    const lightGeo = new THREE.BoxGeometry(0.35, 0.15, 0.1);
+    const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const leftLight = new THREE.Mesh(lightGeo, lightMat);
+    leftLight.position.set(-0.8, 0.6, -3.96);
+    const rightLight = new THREE.Mesh(lightGeo, lightMat);
+    rightLight.position.set(0.8, 0.6, -3.96);
+    carGroup.add(leftLight);
+    carGroup.add(rightLight);
+
+    // 车尾防撞保险杠
+    const bumperGeo = new THREE.BoxGeometry(2.1, 0.25, 0.2);
+    const bumperMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
+    const bumper = new THREE.Mesh(bumperGeo, bumperMat);
+    bumper.position.set(0, 0.4, -3.95);
+    carGroup.add(bumper);
+
+    // 2. 前方卡车车头 (Cab)
+    const cabGeo = new THREE.BoxGeometry(1.9, 1.6, 1.8);
+    const cabMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.5 });
     const cab = new THREE.Mesh(cabGeo, cabMat);
-    cab.position.set(0, 1.0, 2.2); // 车头靠前
+    cab.position.set(0, 1.2, 2.4);
     carGroup.add(cab);
 
-    // 车头挡风玻璃
-    const windshieldGeo = new THREE.BoxGeometry(1.6, 0.6, 0.1);
-    const glassMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.1 });
+    // 车头顶罩（加高车头）
+    const roofGeo = new THREE.BoxGeometry(1.7, 0.5, 1.5);
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+    const roof = new THREE.Mesh(roofGeo, roofMat);
+    roof.position.set(0, 2.1, 2.2);
+    carGroup.add(roof);
+
+    // 挡风玻璃
+    const windshieldGeo = new THREE.BoxGeometry(1.7, 0.6, 0.1);
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1 });
     const windshield = new THREE.Mesh(windshieldGeo, glassMat);
-    windshield.position.set(0, 1.2, 2.96);
+    windshield.position.set(0, 1.4, 3.31);
     carGroup.add(windshield);
 
-    // 2. 后方长货仓 (Long Cargo Container)
-    const cargoGeo = new THREE.BoxGeometry(2.0, 1.8, 5.2);
-    const cargoMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.4, metalness: 0.2 }); // 银白色金属箱体
-    const cargo = new THREE.Mesh(cargoGeo, cargoMat);
-    cargo.position.set(0, 1.3, -1.2); // 货仓向后延伸
-    carGroup.add(cargo);
-
-    // 货仓与车头连接轴 (Hitch Connector)
-    const hitchGeo = new THREE.BoxGeometry(0.6, 0.2, 0.8);
-    const hitchMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
-    const hitch = new THREE.Mesh(hitchGeo, hitchMat);
-    hitch.position.set(0, 0.4, 1.2);
-    carGroup.add(hitch);
-
-    // 3. 多轮组设计 (重卡车轮)
-    const wheelGeo = new THREE.CylinderGeometry(0.4, 0.4, 0.3, 16);
+    // 3. 重卡 6 大轮组
+    const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.35, 16);
     wheelGeo.rotateZ(Math.PI / 2);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
 
-    // 重卡 6 组车轮位置 (前轮 + 后双轴共 6 轮)
     const wheelPositions = [
-        [-0.95, 0.4, 2.2], [0.95, 0.4, 2.2],   // 车头前轮
-        [-1.05, 0.4, -0.8], [1.05, 0.4, -0.8], // 货仓前组后轮
-        [-1.05, 0.4, -2.4], [1.05, 0.4, -2.4]  // 货仓后组后轮
+        [-1.0, 0.45, 2.4], [1.0, 0.45, 2.4],     // 车头轮
+        [-1.05, 0.45, -0.8], [1.05, 0.45, -0.8], // 货仓前组轮
+        [-1.05, 0.45, -2.5], [1.05, 0.45, -2.5]  // 货仓后组轮
     ];
 
     carGroup.userData.wheels = [];
@@ -431,7 +456,7 @@ function bindControls() {
     // 绑定 HUD 点击触发作弊事件（连续快速点击 5 次）
     const hudEl = document.getElementById('hud');
     if (hudEl) {
-        hudEl.style.pointerEvents = "auto"; // 开启指针事件响应
+        hudEl.style.pointerEvents = "auto";
         hudEl.addEventListener('click', () => {
             const now = Date.now();
             if (now - lastTapTime < 500) {
@@ -449,7 +474,6 @@ function bindControls() {
     }
 
     window.addEventListener('keydown', e => {
-        // 物理键盘 Enter 键触发作弊框
         if (e.key === 'Enter') {
             triggerCheat();
         }
@@ -622,10 +646,11 @@ function animate() {
 
             if (!isTransitioning) {
                 const isLandscape = window.innerWidth > window.innerHeight;
-                const camHeight = (isLandscape ? 4.2 : 5.0) + playerY * 0.5;
-                const camDist = isLandscape ? 6.5 : 7.5;
+                // 拉高并拉远摄像机距离，以便全貌观察大型卡车车身
+                const camHeight = (isLandscape ? 5.8 : 6.8) + playerY * 0.5;
+                const camDist = isLandscape ? 8.5 : 9.8;
                 camera.position.set(playerX * 0.4, camHeight, totalDistance - camDist);
-                camera.lookAt(playerX * 0.2, 0.5 + playerY * 0.5, totalDistance + 6);
+                camera.lookAt(playerX * 0.2, 1.2 + playerY * 0.5, totalDistance + 8);
             }
 
             roadSegments.forEach(road => {
