@@ -1,5 +1,5 @@
 // ==================== 音频配置 ====================
-const BGM_URL = 'heijiedj.mp3'; // 请将此路径修改为你的《黑街 DJ》音频文件路径
+const BGM_URL = 'heijie_dj.mp3'; // 请将此路径修改为你的《黑街 DJ》音频文件路径
 const bgm = new Audio(BGM_URL);
 bgm.loop = true;
 
@@ -26,7 +26,7 @@ let roadSegments = [];
 let npcCars = [];
 let truckRamps = [];
 
-let selectedColor = 0xef4444;
+let selectedColor = 0xcb2d2d; // 默认调整为精细的重卡红
 let baseMaxSpeedKmMin = 300; 
 let currentMaxSpeed = 1.2; 
 let currentLevel = 1; 
@@ -198,55 +198,52 @@ function init2DArcade() {
     arcadePlayer.y = arcadeCanvas.height * 0.3;
 }
 
-// 玩家卡车模型
+// ==================== 玩家车辆模型：精细红色重卡（对应第一张参考图） ====================
 function createDetailedCar(colorHex) {
     const carGroup = new THREE.Group();
 
+    // 1. 货厢部分（大红色箱体，带有纵向线条细节感）
     const cargoGeo = new THREE.BoxGeometry(2.1, 2.0, 5.5);
-    const cargoMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.3 });
+    const cargoMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3, metalness: 0.2 });
     const cargo = new THREE.Mesh(cargoGeo, cargoMat);
     cargo.position.set(0, 1.4, -1.2); 
     carGroup.add(cargo);
 
-    const doorFrameGeo = new THREE.BoxGeometry(1.9, 1.8, 0.05);
-    const doorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
-    const doorFrame = new THREE.Mesh(doorFrameGeo, doorMat);
-    doorFrame.position.set(0, 1.4, -3.96);
-    carGroup.add(doorFrame);
-
-    const lightGeo = new THREE.BoxGeometry(0.35, 0.15, 0.1);
-    const lightMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-    const leftLight = new THREE.Mesh(lightGeo, lightMat);
-    leftLight.position.set(-0.8, 0.6, -3.96);
-    const rightLight = new THREE.Mesh(lightGeo, lightMat);
-    rightLight.position.set(0.8, 0.6, -3.96);
-    carGroup.add(leftLight);
-    carGroup.add(rightLight);
-
-    const bumperGeo = new THREE.BoxGeometry(2.1, 0.25, 0.2);
-    const bumperMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
-    const bumper = new THREE.Mesh(bumperGeo, bumperMat);
-    bumper.position.set(0, 0.4, -3.95);
-    carGroup.add(bumper);
-
+    // 2. 驾驶舱主体（红色高顶驾驶室）
     const cabGeo = new THREE.BoxGeometry(1.9, 1.6, 1.8);
-    const cabMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.5 });
+    const cabMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.4 });
     const cab = new THREE.Mesh(cabGeo, cabMat);
     cab.position.set(0, 1.2, 2.4);
     carGroup.add(cab);
 
-    const roofGeo = new THREE.BoxGeometry(1.7, 0.5, 1.5);
-    const roofMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
-    const roof = new THREE.Mesh(roofGeo, roofMat);
-    roof.position.set(0, 2.1, 2.2);
-    carGroup.add(roof);
+    // 3. 驾驶室顶导流罩（防风罩）
+    const roofSpooGeo = new THREE.BoxGeometry(1.8, 0.6, 1.4);
+    const roofMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 });
+    const roofSpoiler = new THREE.Mesh(roofSpooGeo, roofMat);
+    roofSpoiler.position.set(0, 2.3, 2.2);
+    carGroup.add(roofSpoiler);
 
+    // 4. 前挡风玻璃
     const windshieldGeo = new THREE.BoxGeometry(1.7, 0.6, 0.1);
-    const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.1 });
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.1, metalness: 0.9 });
     const windshield = new THREE.Mesh(windshieldGeo, glassMat);
     windshield.position.set(0, 1.4, 3.31);
     carGroup.add(windshield);
 
+    // 5. 前脸进气格栅与保险杠
+    const grilleGeo = new THREE.BoxGeometry(1.4, 0.8, 0.1);
+    const grilleMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
+    const grille = new THREE.Mesh(grilleGeo, grilleMat);
+    grille.position.set(0, 0.8, 3.31);
+    carGroup.add(grille);
+
+    const bumperGeo = new THREE.BoxGeometry(2.1, 0.3, 0.3);
+    const bumperMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4 });
+    const bumper = new THREE.Mesh(bumperGeo, bumperMat);
+    bumper.position.set(0, 0.4, 3.25);
+    carGroup.add(bumper);
+
+    // 6. 多轴车轮组
     const wheelGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.35, 16);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
 
@@ -269,22 +266,49 @@ function createDetailedCar(colorHex) {
     return carGroup;
 }
 
-// 普通 NPC 小汽车模型
+// ==================== NPC小车模型：蓝色两厢掀背小轿车（对应第二张参考图） ====================
 function createNormalCar(colorHex) {
     const carGroup = new THREE.Group();
     
-    const bodyGeo = new THREE.BoxGeometry(1.6, 0.6, 3.2);
-    const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.3 });
+    // 1. 轿车车身下半部分
+    const bodyGeo = new THREE.BoxGeometry(1.6, 0.55, 3.2);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2, metalness: 0.3 });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.position.set(0, 0.5, 0);
+    body.position.set(0, 0.45, 0);
     carGroup.add(body);
 
-    const cabinGeo = new THREE.BoxGeometry(1.4, 0.5, 1.6);
-    const cabinMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.2 });
+    // 2. 两厢掀背乘员舱（车顶带有天窗和流线弧度）
+    const cabinGeo = new THREE.BoxGeometry(1.4, 0.5, 1.7);
+    const cabinMat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.2 });
     const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-    cabin.position.set(0, 1.05, -0.2);
+    cabin.position.set(0, 0.98, -0.1);
     carGroup.add(cabin);
 
+    // 3. 车顶行李架
+    const railGeo = new THREE.BoxGeometry(0.05, 0.08, 1.4);
+    const railMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+    const leftRail = new THREE.Mesh(railGeo, railMat);
+    leftRail.position.set(-0.65, 1.25, -0.1);
+    const rightRail = new THREE.Mesh(railGeo, railMat);
+    rightRail.position.set(0.65, 1.25, -0.1);
+    carGroup.add(leftRail);
+    carGroup.add(rightRail);
+
+    // 4. 前后车窗玻璃
+    const windshieldGeo = new THREE.BoxGeometry(1.35, 0.45, 0.05);
+    const glassMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.1, metalness: 0.8 });
+    
+    const frontWindshield = new THREE.Mesh(windshieldGeo, glassMat);
+    frontWindshield.position.set(0, 0.98, 0.76);
+    frontWindshield.rotation.x = -0.3;
+    carGroup.add(frontWindshield);
+
+    const rearWindshield = new THREE.Mesh(windshieldGeo, glassMat);
+    rearWindshield.position.set(0, 0.98, -0.96);
+    rearWindshield.rotation.x = 0.3;
+    carGroup.add(rearWindshield);
+
+    // 5. 铝合金轮毂车轮
     const wheelGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.2, 16);
     const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
 
@@ -459,7 +483,8 @@ function buildInfiniteRoad() {
 }
 
 function spawnObstacleCar(zPos) {
-    const colors = [0x3b82f6, 0x10b981, 0xf59e0b, 0xa855f7];
+    // 采用亮丽的蓝色小轿车契合参考图样式
+    const colors = [0x3b82f6, 0x60a5fa, 0x2563eb, 0x1d4ed8];
     const npc = createNormalCar(colors[Math.floor(Math.random() * colors.length)]);
     
     const lanes = [-3.6, -1.2, 1.2, 3.6];
