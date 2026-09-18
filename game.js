@@ -1,5 +1,5 @@
 // ==================== 音频配置 ====================
-const BGM_URL = 'heijie_dj.mp3'; 
+const BGM_URL = 'heijiedj.mp3'; 
 const bgm = new Audio(BGM_URL);
 bgm.loop = true;
 
