@@ -1,5 +1,5 @@
 // ==================== 音频配置 ====================
-const BGM_URL = 'heijie_dj.mp3'; // 请将此路径修改为你的《黑街 DJ》音频文件路径
+const BGM_URL = 'heijiedj.mp3'; // 请将此路径修改为你的《黑街 DJ》音频文件路径
 const bgm = new Audio(BGM_URL);
 bgm.loop = true;
 
