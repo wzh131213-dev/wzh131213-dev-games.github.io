@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#10151b">
+<title>长风 · Long Wind | 3D 武侠动作原型</title>
+<style>
+:root{color-scheme:dark;--gold:#e8c98c;--ink:#e9e4d8;--glass:rgba(13,19,25,.72)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#10151b;color:var(--ink);font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif}canvas{display:block;width:100%;height:100%;touch-action:none}#game{position:fixed;inset:0}#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 38%,rgba(3,7,12,.34) 100%);z-index:2}
+.hud{position:fixed;z-index:4;inset:0;pointer-events:none}.topline{position:absolute;top:22px;left:26px;display:flex;align-items:center;gap:14px;text-shadow:0 2px 14px #000}.seal{width:38px;height:38px;border:1px solid #caa96a;color:#e8c98c;display:grid;place-items:center;font-family:serif;font-size:22px;transform:rotate(45deg);background:#141a20aa}.seal span{transform:rotate(-45deg)}.brand strong{display:block;letter-spacing:.28em;font-size:15px}.brand small{display:block;color:#c7c3b8;letter-spacing:.18em;font-size:9px;margin-top:5px}.stats{position:absolute;top:24px;right:26px;width:min(240px,42vw);padding:13px 15px;background:linear-gradient(115deg,rgba(13,18,23,.55),rgba(13,18,23,.15));border-top:1px solid #c5aa795c;backdrop-filter:blur(8px)}.stat{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:8px;margin:7px 0;font-size:11px;color:#d6d0c2}.bar{height:5px;background:#4b4b46;overflow:hidden}.fill{height:100%;width:100%;transition:width .15s}.hp{background:linear-gradient(90deg,#9f3734,#df7560)}.stam{background:linear-gradient(90deg,#9a7838,#e5c77d)}.hint{position:absolute;bottom:22px;left:26px;font-size:11px;line-height:1.8;color:#eee5d2b9;letter-spacing:.06em;text-shadow:0 2px 8px #000}.hint b{color:#f0d7a0;font-weight:500}.quest{position:absolute;left:26px;top:120px;border-left:2px solid #c6a56d;padding:3px 0 3px 12px;text-shadow:0 2px 10px #000}.quest small{display:block;font-size:9px;letter-spacing:.25em;color:#d4b981}.quest strong{display:block;margin-top:6px;font-size:14px;font-weight:500;letter-spacing:.1em}.target{position:absolute;top:105px;left:50%;transform:translateX(-50%);width:200px;text-align:center;opacity:0;transition:opacity .2s;text-shadow:0 2px 8px #000}.target.on{opacity:1}.target .enemybar{height:3px;background:#443b34;margin-top:8px}.target .enemybar div{height:100%;background:#b34a3d;width:100%}
+.crosshair{position:absolute;left:50%;top:50%;width:12px;height:12px;transform:translate(-50%,-50%);opacity:.48}.crosshair:before,.crosshair:after{content:"";position:absolute;background:#f3dfb3}.crosshair:before{width:1px;height:12px;left:5px}.crosshair:after{height:1px;width:12px;top:5px}
+.overlay{position:fixed;inset:0;z-index:8;display:grid;place-items:center;background:linear-gradient(90deg,rgba(5,9,13,.88),rgba(7,12,17,.48)),radial-gradient(ellipse at 70% 55%,#b17b4133,transparent 55%);transition:opacity .5s}.panel{width:min(560px,88vw);padding:34px 30px 28px;border:1px solid #c6a56d4d;background:linear-gradient(140deg,rgba(17,24,29,.9),rgba(10,15,19,.75));box-shadow:0 22px 90px #0008;backdrop-filter:blur(14px)}.eyebrow{color:#d5b77c;letter-spacing:.35em;font-size:10px}.panel h1{font-family:serif;font-weight:400;font-size:clamp(48px,9vw,76px);letter-spacing:.24em;margin:18px 0 4px;text-shadow:0 4px 30px #e8b96c30}.sub{font-size:12px;letter-spacing:.22em;color:#c9c2b5}.line{height:1px;background:linear-gradient(90deg,#c8a56c99,transparent);margin:25px 0}.desc{font-size:13px;line-height:2;color:#c8c6bd;max-width:440px}.actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:25px}button{font:inherit;cursor:pointer;color:var(--ink)}.primary{border:1px solid #d6b87d;background:linear-gradient(135deg,#b18a4d,#6f512d);color:#fff5dd;padding:13px 30px;letter-spacing:.18em;font-size:12px;box-shadow:0 8px 28px #0005}.primary:hover{filter:brightness(1.15)}.secondary{border:1px solid #9a927c55;background:transparent;padding:12px 18px;font-size:11px;color:#d4cbb9}.foot{font-size:10px;color:#9d9b92;letter-spacing:.06em;margin-top:24px;line-height:1.8}.hidden{opacity:0;pointer-events:none}.toast{position:fixed;z-index:7;left:50%;top:24%;transform:translateX(-50%);font-family:serif;letter-spacing:.2em;color:#f1d7a0;text-shadow:0 2px 14px #000;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+.mobile{position:fixed;z-index:5;inset:auto 0 20px;display:none;justify-content:space-between;align-items:end;padding:0 18px;pointer-events:none}.stick{width:112px;height:112px;border:1px solid #d9c79b66;border-radius:50%;background:#0a111755;position:relative;pointer-events:auto;touch-action:none}.nub{position:absolute;left:50%;top:50%;width:42px;height:42px;margin:-21px;border-radius:50%;background:#d8c18a55;border:1px solid #e8d7ae99}.mobileBtns{display:grid;grid-template-columns:repeat(2,58px);gap:9px;pointer-events:auto}.mobileBtns button{height:54px;border-radius:50%;border:1px solid #d9c79b88;background:#11182099;color:#f0d7a0;font-size:12px;touch-action:none}.mobileBtns button.big{grid-column:2;grid-row:1 / span 2;height:66px;width:66px;align-self:center;background:#84643a99}.mobileBtns button:active{background:#b18a4d}
+@media(max-width:650px){.topline{top:14px;left:14px;gap:10px}.seal{width:30px;height:30px;font-size:17px}.brand strong{font-size:12px}.brand small{font-size:8px}.stats{top:14px;right:12px;width:140px;padding:8px 9px}.stat{grid-template-columns:33px 1fr;font-size:9px;gap:5px;margin:5px 0}.quest{top:92px;left:14px}.quest strong{font-size:12px}.hint{left:14px;bottom:145px;font-size:9px}.mobile{display:flex}.panel{padding:26px 21px}.panel h1{font-size:54px}.desc{font-size:12px}}
+</style>
+</head>
+<body>
+<div id="game"></div><div id="vignette"></div>
+<div class="hud" id="hud">
+  <div class="topline"><div class="seal"><span>风</span></div><div class="brand"><strong>长风</strong><small>LONG WIND · 武侠动作原型</small></div></div>
+  <div class="quest"><small>当前行旅 / JOURNEY</small><strong>落日荒原 · 寻踪</strong></div>
+  <div class="stats"><div class="stat"><span>气血</span><div class="bar"><div class="fill hp" id="hp"></div></div></div><div class="stat"><span>内力</span><div class="bar"><div class="fill stam" id="stam"></div></div></div></div>
+  <div class="target" id="target"><span id="targetName">荒原刀客</span><div class="enemybar"><div id="enemyHp"></div></div></div>
+  <div class="crosshair"></div>
+  <div class="hint">移动 <b>W A S D</b>　闪避 <b>Shift</b>　轻击 <b>鼠标左键 / J</b>　重击 <b>K</b><br>锁定目标 <b>Q</b>　剑气 <b>R</b>　暂停 <b>Esc</b> · 鼠标拖动可转动视角</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="mobile" id="mobile"><div class="stick" id="stick"><div class="nub" id="nub"></div></div><div class="mobileBtns"><button id="dodgeBtn">闪避</button><button id="heavyBtn">重击</button><button class="big" id="attackBtn">出剑</button><button id="qiBtn">剑气</button><button id="lockBtn">锁定</button></div></div>
+<div class="overlay" id="overlay"><div class="panel"><div class="eyebrow">AN ORIGINAL WUXIA ACTION PROTOTYPE</div><h1>长风</h1><div class="sub">剑起处，山河静。</div><div class="line"></div><div class="desc">风过荒原，旧路已断。持剑者踏入落日之境，迎向拦路的刀客。此为可操作的早期游戏原型：探索、锁定、闪避、连击与剑气均已接入。</div><div class="actions"><button class="primary" id="startBtn">踏入荒原　→</button><button class="secondary" id="qualityBtn">画质：电影</button></div><div class="foot">建议使用电脑键盘与鼠标体验。移动设备可使用屏幕摇杆与动作按钮。主角正式模型待导入后替换当前程序化占位角色。</div></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js';
+
+const $=id=>document.getElementById(id);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0xb9a07a); scene.fog=new THREE.FogExp2(0xb8a07e,.009);
+const camera=new THREE.PerspectiveCamera(58,innerWidth/innerHeight,.1,500);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.75)); renderer.setSize(innerWidth,innerHeight); renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.08; $('game').appendChild(renderer.domElement);
+const hemi=new THREE.HemisphereLight(0xc6d7e2,0x55412b,2.0);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffd29a,3.6);sun.position.set(-38,54,-24);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-45;sun.shadow.camera.right=45;sun.shadow.camera.top=45;sun.shadow.camera.bottom=-45;sun.shadow.bias=-.00025;scene.add(sun);
+const fill=new THREE.DirectionalLight(0x9dbbd0,.8);fill.position.set(25,16,30);scene.add(fill);
+const mat=(color,roughness=.8,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+const groundMat=mat(0x786548,1), grassMats=[mat(0x5c6040),mat(0x77734a),mat(0x9a8251),mat(0x434c36)];
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.18;ground.receiveShadow=true;scene.add(ground);
+// Subtle procedural ground bands
+const ridgeMat=mat(0x655743,1);
+for(let i=0;i<10;i++){const geo=new THREE.ConeGeometry(7+i*1.1,9+i*.7,7);const m=new THREE.Mesh(geo,ridgeMat);m.position.set(-75+i*17,2,-75-(i%3)*12);m.scale.z=1.6;m.rotation.y=i*.7;scene.add(m)}
+for(let i=0;i<14;i++){const geo=new THREE.ConeGeometry(10+(i%4)*3,16+(i%5)*3,8);const m=new THREE.Mesh(geo,mat(i%2?0x625c4a:0x77705a));m.position.set(-100+i*15,4,-115-(i%4)*14);m.scale.z=1.8;m.rotation.y=i*.5;scene.add(m)}
+// sunset disc + atmospheric cloud layers
+const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(5.5,24,16),new THREE.MeshBasicMaterial({color:0xffd7a0}));sunDisc.position.set(-35,25,-120);scene.add(sunDisc);
+const cloudMat=new THREE.MeshBasicMaterial({color:0xe2c9a4,transparent:true,opacity:.12,depthWrite:false});
+for(let i=0;i<22;i++){const c=new THREE.Mesh(new THREE.SphereGeometry(1,8,6),cloudMat);c.scale.set(8+Math.random()*15,1+Math.random()*2,2+Math.random()*5);c.position.set(-110+Math.random()*220,22+Math.random()*24,-95-Math.random()*40);scene.add(c)}
+// Grass is instanced for a broad readable field, animated subtly in shader-like vertex transforms.
+const grassGeo=new THREE.ConeGeometry(.065, .7, 3);grassGeo.translate(0,.35,0);
+const grassCount=12500;const grass=new THREE.InstancedMesh(grassGeo,grassMats[0],grassCount);grass.castShadow=false;grass.receiveShadow=true;
+const dummy=new THREE.Object3D();const colors=[new THREE.Color(0x77724a),new THREE.Color(0x96905a),new THREE.Color(0x555e3b),new THREE.Color(0x6f6540)];
+for(let i=0;i<grassCount;i++){const x=(Math.random()-.5)*180,z=(Math.random()-.5)*180;if(Math.abs(x)<3&&Math.abs(z)<5){i--;continue}dummy.position.set(x,-.15,z);dummy.rotation.set((Math.random()-.5)*.2,Math.random()*Math.PI,(Math.random()-.5)*.2);const s=.35+Math.random()*1.3;dummy.scale.set(s,s,s);dummy.updateMatrix();grass.setMatrixAt(i,dummy.matrix);grass.setColorAt(i,colors[Math.floor(Math.random()*colors.length)])}scene.add(grass);
+// Wind ribbons in the distance
+const windM=new THREE.LineBasicMaterial({color:0xe3d3ad,transparent:true,opacity:.18});
+const windLines=[];for(let i=0;i<25;i++){const points=[];const x=(Math.random()-.5)*95,z=-18-Math.random()*55,y=.4+Math.random()*2;points.push(new THREE.Vector3(x,y,z),new THREE.Vector3(x+2+Math.random()*4,y+.1,z-.2),new THREE.Vector3(x+6+Math.random()*4,y,z-.5));const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),windM);scene.add(line);windLines.push({line,x,z,y,phase:Math.random()*6})}
+// Character builder: temporary procedural wuxia silhouette
+function makeFighter(isPlayer=true){
+ const g=new THREE.Group();const robe=mat(isPlayer?0xd8d2c3:0x51443c,.86);const dark=mat(isPlayer?0x242c31:0x302421,.75);const skin=mat(isPlayer?0xb88e70:0x926c50);const metal=mat(0xaaa99d,.28,.7);const red=mat(isPlayer?0x8f3732:0x49332a,.75);
+ const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.34,.68,5,10),robe);torso.position.y=1.42;torso.castShadow=true;g.add(torso);
+ const skirt=new THREE.Mesh(new THREE.ConeGeometry(.54,.78,8),robe);skirt.position.y=.83;skirt.rotation.x=Math.PI;skirt.scale.z=.75;skirt.castShadow=true;g.add(skirt);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.22,16,12),skin);head.position.y=2.12;head.castShadow=true;g.add(head);
+ const hat=new THREE.Mesh(new THREE.CylinderGeometry(.17,.2,.1,16),dark);hat.position.y=2.31;g.add(hat);const brim=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.035,24),dark);brim.position.y=2.28;g.add(brim);
+ const sash=new THREE.Mesh(new THREE.BoxGeometry(.62,.12,.4),red);sash.position.set(0,1.56,0);g.add(sash);
+ const armGeo=new THREE.CapsuleGeometry(.105,.5,4,8);const arms=[];
+ for(const side of [-1,1]){const arm=new THREE.Mesh(armGeo,robe);arm.position.set(side*.42,1.46,0);arm.rotation.z=side*-.2;arm.castShadow=true;g.add(arm);arms.push(arm);
+ const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.12,.5,4,8),dark);leg.position.set(side*.17,.34,0);leg.castShadow=true;g.add(leg)}
+ const swordGroup=new THREE.Group();const grip=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.38,8),dark);grip.rotation.z=Math.PI/2;grip.position.x=.06;swordGroup.add(grip);
+ const guard=new THREE.Mesh(new THREE.BoxGeometry(.09,.32,.07),metal);guard.position.x=.26;swordGroup.add(guard);
+ const blade=new THREE.Mesh(new THREE.BoxGeometry(.055,.98,.025),metal);blade.position.set(.27,.65,0);blade.rotation.z=-.12;swordGroup.add(blade);
+ const tip=new THREE.Mesh(new THREE.ConeGeometry(.04,.18,4),metal);tip.position.set(.33,1.21,0);tip.rotation.z=-.12;swordGroup.add(tip);
+ swordGroup.position.set(.44,1.28,.05);swordGroup.rotation.z=-.6;g.add(swordGroup);
+ // red cloth tails
+ const tail=new THREE.Mesh(new THREE.BoxGeometry(.08,.62,.035),red);tail.position.set(-.16,1.2,-.28);tail.rotation.x=-.3;tail.rotation.z=-.25;g.add(tail);
+ g.userData={torso,head,arms,swordGroup,tail,baseY:0,isPlayer};g.traverse(o=>{if(o.isMesh)o.castShadow=true});scene.add(g);return g;
+}
+const player=makeFighter(true);player.position.set(0,0,5);
+const enemies=[];
+function spawnEnemy(x,z){const g=makeFighter(false);g.position.set(x,0,z);g.scale.setScalar(.98);enemies.push({g,hp:100,maxHp:100,attackCd:1+Math.random(),state:'idle',stun:0,dead:false,phase:Math.random()*7});return enemies[enemies.length-1]}
+spawnEnemy(2, -5);spawnEnemy(-7,-13);spawnEnemy(9,-19); 
+// Ground stones and scattered scrub
+for(let i=0;i<190;i++){const x=(Math.random()-.5)*110,z=(Math.random()-.5)*100;if(Math.abs(x)<2&&Math.abs(z)<6)continue;const stone=new THREE.Mesh(new THREE.DodecahedronGeometry(.12+Math.random()*.3,0),mat(Math.random()>.5?0x635846:0x80735d));stone.position.set(x,-.08,z);stone.scale.y=.35+Math.random()*.8;stone.rotation.set(Math.random(),Math.random(),Math.random());scene.add(stone)}
+// controls / camera
+const keys={};let started=false,paused=false,lockTarget=null,health=100,stamina=100,combo=0,lastAttack=0,attackTimer=0,attackKind='',dodgeTimer=0,qiTimer=0,qiCd=0,invuln=0,mouseDown=false,yaw=0,pitch=.12,camDist=6.8,moveX=0,moveY=0,quality=1,toastTimer=0,elapsed=0;
+const clock=new THREE.Clock();let lastFrame=0;
+function say(t){$('toast').textContent=t;$('toast').classList.add('show');toastTimer=1.5}
+function nearestEnemy(){let best=null,d=Infinity;for(const e of enemies){if(e.dead)continue;const n=e.g.position.distanceTo(player.position);if(n<d){d=n;best=e}}return best}
+function toggleLock(){if(lockTarget&&!lockTarget.dead)lockTarget=null;else lockTarget=nearestEnemy();$('target').classList.toggle('on',!!lockTarget);if(lockTarget)say('锁定：荒原刀客')}
+function attack(heavy=false){if(!started||paused||dodgeTimer>0||attackTimer>0)return;if(heavy&&stamina<22){say('内力不足');return}if(heavy)stamina-=22;const now=performance.now();combo=(now-lastAttack<1000?combo%3+1:1);lastAttack=now;attackKind=heavy?'heavy':'light';attackTimer=heavy?.62:.42;const ud=player.userData;ud.swordGroup.rotation.z=heavy?-.6: -.6;ud.swordGroup.rotation.x=0;say(heavy?'破势重斩':(['起手','连斩','回锋'][combo-1]));}
+function dodge(){if(!started||paused||dodgeTimer>0||stamina<18)return;stamina-=18;dodgeTimer=.42;invuln=.38;say('踏风')}
+function swordQi(){if(!started||paused||qiCd>0||stamina<30)return;stamina-=30;qiTimer=.45;qiCd=2.6;const dir=new THREE.Vector3(Math.sin(yaw),0,-Math.cos(yaw));const start=player.position.clone().add(new THREE.Vector3(0,1.2,0)).addScaledVector(dir,.9);const beam=new THREE.Mesh(new THREE.CylinderGeometry(.08,.24,7,12,1,true),new THREE.MeshBasicMaterial({color:0xa9e4f0,transparent:true,opacity:.8,side:THREE.DoubleSide}));beam.position.copy(start).addScaledVector(dir,3.2);beam.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir);scene.add(beam);setTimeout(()=>{scene.remove(beam);beam.geometry.dispose();beam.material.dispose()},180);for(const e of enemies){if(e.dead)continue;const to=e.g.position.clone().sub(player.position);const along=to.dot(dir);const side=to.clone().addScaledVector(dir,-along).length();if(along>0&&along<9&&side<1.5)damageEnemy(e,38)}say('剑气 · 长风')}
+function damageEnemy(e,amount){if(e.dead)return;e.hp=Math.max(0,e.hp-amount);e.stun=.5;e.state='hurt';const d=e.g.position.clone().sub(player.position).normalize();e.g.position.addScaledVector(d,.65);if(e.hp<=0){e.dead=true;e.state='dead';e.g.rotation.z=.9;say('刀客倒地')}if(lockTarget===e)$('enemyHp').style.width=(e.hp/e.maxHp*100)+'%'}
+function damagePlayer(amount){if(invuln>0||health<=0)return;health=Math.max(0,health-amount);say('受击');if(health<=0){paused=true;$('overlay').classList.remove('hidden');$('startBtn').textContent='重新踏入荒原';$('overlay').querySelector('h1').textContent='暂歇';$('overlay').querySelector('.desc').textContent='你在荒原中力竭了。整装之后，再起长风。'}}
+function doHit(){let target=lockTarget&&!lockTarget.dead?lockTarget:nearestEnemy();if(!target)return;const to=target.g.position.clone().sub(player.position);const d=to.length();const forward=new THREE.Vector3(Math.sin(yaw),0,-Math.cos(yaw));if(d<3.1&&forward.dot(to.normalize())>.15)damageEnemy(target,attackKind==='heavy'?46:18+combo*5)}
+function resetGame(){health=100;stamina=100;combo=0;player.position.set(0,0,5);player.rotation.set(0,0,0);enemies.forEach((e,i)=>{e.hp=100;e.dead=false;e.state='idle';e.stun=0;e.g.position.set([[2,-5],[-7,-13],[9,-19]][i]);e.g.rotation.set(0,0,0);e.g.visible=true});lockTarget=null;$('target').classList.remove('on');}
+function begin(){if(paused&&health>0){paused=false;$('overlay').classList.add('hidden');return}if(health<=0)resetGame();started=true;paused=false;$('overlay').classList.add('hidden');if(innerWidth>700)renderer.domElement.requestPointerLock?.();say('长风入境')}
+$('startBtn').addEventListener('click',begin);$('qualityBtn').addEventListener('click',()=>{quality=quality===1?0:1;renderer.setPixelRatio(Math.min(devicePixelRatio,quality?1.75:1));$('qualityBtn').textContent='画质：'+(quality?'电影':'性能')});
+document.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();if(e.repeat)return;if(e.code==='Escape'&&started){paused=!paused;$('overlay').classList.toggle('hidden',!paused);$('overlay').querySelector('h1').textContent=paused?'长风':'长风';$('startBtn').textContent=paused?'继续行旅 →':'踏入荒原 →';}if(e.code==='KeyJ'||e.code==='Space')attack(false);if(e.code==='KeyK')attack(true);if(e.code==='ShiftLeft'||e.code==='ShiftRight')dodge();if(e.code==='KeyQ')toggleLock();if(e.code==='KeyR')swordQi()});
+document.addEventListener('keyup',e=>keys[e.code]=false);
+document.addEventListener('mousemove',e=>{if(document.pointerLockElement===renderer.domElement){yaw-=e.movementX*.0023;pitch=Math.max(-.1,Math.min(.6,pitch+e.movementY*.0017))}else if(mouseDown&&started){yaw-=e.movementX*.004;pitch=Math.max(-.1,Math.min(.6,pitch+e.movementY*.003))}});
+renderer.domElement.addEventListener('mousedown',e=>{if(e.button===0){mouseDown=true;if(started&&!paused)attack(false)}if(e.button===2)attack(true)});document.addEventListener('mouseup',()=>mouseDown=false);renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());renderer.domElement.addEventListener('wheel',e=>{camDist=Math.max(4,Math.min(10,camDist+e.deltaY*.006))},{passive:true});
+// Touch joystick
+let stickPointer=null;const stick=$('stick'),nub=$('nub');stick.addEventListener('pointerdown',e=>{stickPointer=e.pointerId;stick.setPointerCapture(e.pointerId);moveStick(e)});stick.addEventListener('pointermove',e=>{if(e.pointerId===stickPointer)moveStick(e)});function moveStick(e){const r=stick.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),len=Math.min(38,Math.hypot(dx,dy)),a=Math.atan2(dy,dx);moveX=Math.cos(a)*len/38;moveY=Math.sin(a)*len/38;nub.style.transform='translate('+moveX*38+'px,'+moveY*38+'px)'}function endStick(e){if(e.pointerId===stickPointer){stickPointer=null;moveX=moveY=0;nub.style.transform=''}}stick.addEventListener('pointerup',endStick);stick.addEventListener('pointercancel',endStick);
+$('attackBtn').addEventListener('pointerdown',e=>{e.preventDefault();attack(false)});$('heavyBtn').addEventListener('pointerdown',e=>{e.preventDefault();attack(true)});$('dodgeBtn').addEventListener('pointerdown',e=>{e.preventDefault();dodge()});$('qiBtn').addEventListener('pointerdown',e=>{e.preventDefault();swordQi()});$('lockBtn').addEventListener('pointerdown',e=>{e.preventDefault();toggleLock()});
+// Main loop
+function update(dt){
+ elapsed+=dt;if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').classList.remove('show')}
+ if(!started||paused)return;
+ stamina=Math.min(100,stamina+dt*(dodgeTimer>0?3:12));if(invuln>0)invuln-=dt;if(dodgeTimer>0)dodgeTimer-=dt;if(qiCd>0)qiCd-=dt;
+ const forwardInput=(keys.KeyW||keys.ArrowUp?1:0)-(keys.KeyS||keys.ArrowDown?1:0)-moveY;
+ const sideInput=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0)+moveX;
+ let mx=sideInput,mz=forwardInput;const mag=Math.hypot(mx,mz);if(mag>1){mx/=mag;mz/=mag}
+ if(lockTarget&&!lockTarget.dead){const to=lockTarget.g.position.clone().sub(player.position);yaw=Math.atan2(to.x,-to.z)}
+ const speed=dodgeTimer>0?11:4.8;const dx=(Math.sin(yaw)*(-mz)+Math.cos(yaw)*mx)*speed*dt;const dz=(-Math.cos(yaw)*(-mz)+Math.sin(yaw)*mx)*speed*dt;
+ player.position.x+=dx;player.position.z+=dz;player.position.x=THREE.MathUtils.clamp(player.position.x,-35,35);player.position.z=THREE.MathUtils.clamp(player.position.z,-45,35);
+ if(mag>.05){if(!lockTarget)player.rotation.y=Math.atan2(dx,dz);else player.rotation.y=yaw}
+ player.position.y=0;player.userData.torso.position.y=1.42+Math.sin(elapsed*9)*Math.min(.045,mag*.045);player.userData.tail.rotation.x=-.3+Math.sin(elapsed*5)*.16;
+ if(attackTimer>0){const old=attackTimer;attackTimer-=dt;const p=1-attackTimer/(attackKind==='heavy'?.62:.42);player.userData.swordGroup.rotation.z=-.6+Math.sin(p*Math.PI)* (attackKind==='heavy'?2.5:2.1);player.userData.swordGroup.rotation.x=Math.sin(p*Math.PI)*.5;if(old>0&&attackTimer<=0)doHit();if(attackTimer<=0){player.userData.swordGroup.rotation.set(0,0,-.6)}}
+ for(const e of enemies){if(e.dead){e.g.rotation.z=THREE.MathUtils.lerp(e.g.rotation.z,1.25,dt*2);continue}e.attackCd-=dt;if(e.stun>0){e.stun-=dt;e.g.userData.torso.position.y=1.42+Math.sin(elapsed*32)*.04;continue}const v=player.position.clone().sub(e.g.position);const d=v.length();if(d<16){e.g.rotation.y=Math.atan2(v.x,v.z);if(d>1.8){e.g.position.addScaledVector(v.normalize(),dt*(d>5?1.25:.8));e.state='approach'}else if(e.attackCd<=0){e.attackCd=1.7+Math.random()*.8;e.state='attack';if(Math.random()>.2)damagePlayer(8);e.g.userData.swordGroup.rotation.z=1.2;setTimeout(()=>{if(e.g&&!e.dead)e.g.userData.swordGroup.rotation.z=-.6},220)}}else{e.g.position.x+=Math.sin(elapsed*.5+e.phase)*dt*.15}e.g.userData.torso.position.y=1.42+Math.sin(elapsed*3+e.phase)*.018}
+ $('hp').style.width=health+'%';$('stam').style.width=stamina+'%';
+ if(lockTarget){if(lockTarget.dead){lockTarget=null;$('target').classList.remove('on')}else{$('enemyHp').style.width=(lockTarget.hp/lockTarget.maxHp*100)+'%'}}
+}
+function cameraUpdate(dt){const target=new THREE.Vector3(player.position.x,1.35,player.position.z);const lookYaw=yaw;const dist=camDist;const desired=new THREE.Vector3(target.x+Math.sin(lookYaw)*dist*Math.cos(pitch),target.y+2.0+Math.sin(pitch)*dist,target.z+Math.cos(lookYaw)*dist*Math.cos(pitch));camera.position.lerp(desired,1-Math.exp(-dt*5));camera.lookAt(target.x,target.y+.2,target.z);sun.position.set(player.position.x-38,54,player.position.z-24);sun.target.position.copy(player.position);scene.add(sun.target)}
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);update(dt);cameraUpdate(dt);for(const w of windLines){w.line.position.x=Math.sin(elapsed*.6+w.phase)*.7}renderer.render(scene,camera)}animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,quality?1.75:1))});
+camera.position.set(0,4,13);camera.lookAt(0,1,0);
+</script>
+</body>
+</html>
